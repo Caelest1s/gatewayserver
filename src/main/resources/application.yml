@@ -43,4 +43,8 @@ resilience4j:
         failure-rate-threshold: 50
         wait-duration-in-open-state: 10000
       accountsCircuitBreaker:
-        wait-duration-in-open-state: 7000
+        wait-duration-in-open-state: 10000
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 7000
