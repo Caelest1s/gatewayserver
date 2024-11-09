@@ -5,7 +5,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 @SpringBootApplication
@@ -27,8 +29,12 @@ public class GatewayserverApplication {
 				.route(p -> p.path("/bank/loans/**")
 						.filters(f -> f.rewritePath("/bank/loans/(?<segment>.*)", "/${segment}")
 								.addResponseHeader("X-Response-Time", LocalDateTime.now().toString())
-								.circuitBreaker(config -> config.setName("loansCircuitBreaker")
-										.setFallbackUri("forward:/contactSupport")))
+								.retry(retryConfig -> retryConfig.setRetries(3)
+										.setMethods(HttpMethod.GET)
+										.setBackoff(Duration.ofMillis(100), Duration.ofMillis(1000), 2, true))
+								/*.circuitBreaker(config -> config.setName("loansCircuitBreaker")
+										.setFallbackUri("forward:/contactSupport"))*/
+						)
 						.uri("lb://LOANS"))
 				.route(p -> p.path("/bank/cards/**")
 						.filters(f -> f.rewritePath("/bank/cards/(?<segment>.*)", "/${segment}")
